@@ -1,1 +1,58 @@
+from sklearn import datasets
+import numpy as np
 
+def Knn(X_tr, y_tr, X_te, y_te, k, c):
+    """
+    :param X_tr: Traing dataset. Each row represents a sample.样本数据集，每行为一个样本
+    :param y_tr: Label vector of samples in training dataset.特征，每列为特征
+    :param X_te: Testing dataset.Each row represents a sample.测试数据集
+    :param y_te: Label vector of samples in testing dataset.测试数据集特征
+    :param k: Number of nearest neighbors.临近样本
+    :param c: Number of classes/类
+    :return: score on testing dataset and labels of testing samples.
+    """
+
+    if k % 2 == 0:
+        print('k should be an odd number.')  # k需是奇数
+        return
+
+    labels = []
+    for i in range(len(y_te)):
+        # Calculate the k nearest neighbors to the testing data point
+        x = X_te[i, :]
+        diff = X_tr - x
+        dist = np.linalg.norm(diff, ord=2, axis=1)  # distance,ord表示范数。求diff中每个行向量的第2范数
+
+        count = np.zeros(c)  # 生成全是0的数组
+        for j in range(k):
+            ind = np.argmin(dist)  # 求最小距离的下标
+            count[y_tr[ind]] += 1  # 对应位置标记
+            dist[ind] = 1e10  # 给已标记值附一个极大值，方便后续求次小值
+
+        labels.append(np.argmax(count))  # 把标记好的下标放入标签组
+
+    d = (labels == y_te)  # 判断，一样的话d=1，不一样d=0
+    score = np.sum(d) / len(y_te)  # 计算准确度。（求和d只会得到d=1即正确的值之和）
+    return score, labels
+
+
+# Load iris dataset
+iris = datasets.load_iris()  # 导入鸢尾花的数据集，iris是一个类似于结构体的东西，内部有样本数据，如果是监督学习还有标签数据
+X = iris.data  # 样本数据150*4二维数据，代表150个样本，每个样本4个属性分别为花瓣和花萼的长、宽
+y = iris.target  # 长150的一维数组，样本数据的标签
+
+# Split the dataset into training data samples and testing data points.70%数据在训练集，30%数据在测试集
+ind = np.random.randint(1, len(y), round(len(y) * 0.7))
+X_train = X[ind, :]
+y_train = y[ind]
+
+ind = np.random.randint(1, len(y), round(len(y) * 0.3))
+X_test = X[ind, :]
+y_test = y[ind]
+
+# You should provide your code to evaluate knn's performance with different k
+for k in range(6):
+    if k % 2 == 0:
+        continue
+    score, labels = Knn(X_train, y_train, X_test, y_test, k, 5)
+    print("k=%.f,score=%.3f"%(k,score))
