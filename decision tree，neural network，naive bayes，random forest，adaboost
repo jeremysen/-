@@ -1,0 +1,58 @@
+from sklearn import datasets,tree
+import numpy as np
+from sklearn.neural_network import MLPClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import AdaBoostClassifier
+
+iris=datasets.load_iris()
+x=iris.data
+y=iris.target
+i=1
+DT=0
+NN=0
+NB=0
+RF=0
+AD=0
+for i in range(51):
+    ind=np.random.randint(1,len(y),round(len(y)*0.7))
+    x_train=x[ind,:]
+    y_train=y[ind]
+
+    ind=np.random.randint(1,len(y),round(len(y)*0.3))
+    x_test=x[ind,:]
+    y_test=y[ind]
+
+    # decision trees
+    clf=tree.DecisionTreeClassifier()
+    clf=clf.fit(x_train,y_train)
+    score_dt=clf.score(x_test,y_test)
+    DT+=score_dt
+
+    # neural network
+    clf_MLPClassifier=MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(50, 4), random_state=1) # solver权重优化算法；alpha正则化项参数；random_state随机数种子
+    clf_MLPClassifier.fit(x_train,y_train)
+    score_nn=clf.score(x_test,y_test)
+    NN+=score_nn
+
+    # naive bayes
+    gnb=GaussianNB()
+    gnb.fit(x_train,y_train)
+    score_nb=gnb.score(x_test,y_test)
+    NB+=score_nb
+
+    # random forests
+    clf=RandomForestClassifier(n_estimators=100)
+    clf.fit(x_train,y_train)
+    score_rf=clf.score(x_test,y_test)
+    RF+=score_rf
+
+    # adaboost
+    clf=AdaBoostClassifier(n_estimators=100)
+    clf.fit(x_train,y_train)
+    score_ada=clf.score(x_test,y_test)
+    AD+=score_ada
+
+    i+=1
+
+print("After 50 times, accuracy：decision tree=%.3f, neural network=%.3f, naive bayes=%.3f, random forests=%.3f, adaboost=%.3f"%(DT/50,NN/50,NB/50,RF/50,AD/50))
